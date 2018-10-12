@@ -4,7 +4,7 @@ namespace :scrape do
 
     agent = Mechanize.new
 
-    page = agent.get('https.//www.goodreads.com/shelf/show/fiction')
+    page = agent.get('https://www.goodreads.com/shelf/show/fiction')
 
     book = page.search('.left')
 
@@ -12,7 +12,16 @@ namespace :scrape do
       title = book.at('.leftAlignedImage').attributes['title'].value
       link = page.link_with(text: title)
       book_page = link.click
-      info = 
+      info = book.search('.grayText' && '.smallText').at('span').text.strip.split(' ')
+      b = Book.new
+      b.title = title
+      b.author = book.at('.authorName').text
+      b.url = "https://goodreads.com#{book.at('.leftAlignedImage').attributes['href'].value}"
+      b.image = book_page.at('#coverImage').attributes['src'].value
+      b.avg_rating = info[2]
+      b.num_ratings = info[4].gsub(',','')
+      b.published = info[8]
+      b.save
     end
   end
 end
